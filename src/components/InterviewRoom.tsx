@@ -9,46 +9,62 @@ import {
 import { Room, Track } from "livekit-client";
 import "@livekit/components-styles";
 import { useState, useEffect } from "react";
+import { useParams, Navigate, useSearchParams } from "react-router-dom";
+import NotFound from "./NotFound";
 
-const serverUrl = "<your LiveKit server URL>";
-const token = "<generate a token>";
+const serverUrl = "wss://mock-interview-2koatsft.livekit.cloud";
 
 export default function InterviewRoom() {
+  // const { room } = useParams();
+  const [searchParams] = useSearchParams();
+  // hard coding the access token for demonstration purposes
+  const AccessToken =
+    "eyJhbGciOiJIUzI1NiJ9.eyJ2aWRlbyI6eyJyb29tSm9pbiI6dHJ1ZSwicm9vbSI6ImludGVydmlldy1yb29tLTE3NTMwMTU0NTk1NTMifSwiaXNzIjoiQVBJUmpQbnBCbVNqZ3ByIiwiZXhwIjoxNzUzMTAxODYwLCJuYmYiOjAsInN1YiI6Im11cnVnYW4ifQ.KMwhTEF65CfgCz_vgmqVdkcnoXFOsZQ1gQfRNda24j8";
+  const candidate_id = searchParams.get("candidate_id");
+  const token = searchParams.get("token") || AccessToken;
+  console.log(token, "token");
+  if (!token) {
+    return <NotFound />;
+  }
+  // If on /create, render as before (no params)
+
+  return <InterviewRoomContent serverUrl={serverUrl} token={token} />;
+}
+
+function InterviewRoomContent({
+  serverUrl,
+  token,
+}: {
+  serverUrl: string;
+  token: string;
+}) {
   const [room] = useState(
     () =>
       new Room({
-        // Optimize video quality for each participant's screen
         adaptiveStream: true,
-        // Enable automatic audio/video quality optimization
         dynacast: true,
       })
   );
 
-  // Connect to room
   useEffect(() => {
     let mounted = true;
-
     const connect = async () => {
       if (mounted) {
         await room.connect(serverUrl, token);
       }
     };
     connect();
-
     return () => {
       mounted = false;
       room.disconnect();
     };
-  }, [room]);
+  }, [room, serverUrl, token]);
 
   return (
     <RoomContext.Provider value={room}>
       <div data-lk-theme="default" style={{ height: "100vh" }}>
-        {/* Your custom component with basic video conferencing functionality. */}
         <MyVideoConference />
-        {/* The RoomAudioRenderer takes care of room-wide audio for you. */}
         <RoomAudioRenderer />
-        {/* Controls for the user to start/stop audio, video, and screen share tracks */}
         <ControlBar />
       </div>
     </RoomContext.Provider>

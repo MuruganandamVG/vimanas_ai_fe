@@ -14,6 +14,7 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="upload" element={<UploadResume />} />
             <Route path="create" element={<InterviewRoom />} />
+            <Route path="interview/:room_name" element={<InterviewRoom />} />
           </Route>
         </Routes>
       </BrowserRouter>

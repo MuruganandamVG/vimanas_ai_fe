@@ -1,9 +1,8 @@
 import Dashboard from "./components/Dashboard";
-import InterviewRoom from "./components/InterviewRoom";
 import Layout from "./components/Layout";
 import UploadResume from "./components/UploadResume";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-
+import InterviewRoom from "./components/interview";
 function App() {
   return (
     <>
@@ -14,8 +13,10 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="upload" element={<UploadResume />} />
             <Route path="create" element={<InterviewRoom />} />
-            <Route path="interview/:room_name" element={<InterviewRoom />} />
+            {/* <Route path="create" element={<InterviewRoom />} /> */}
+            {/* <Route path="interview/:room_name" element={<InterviewRoom />} /> */}
           </Route>
+          <Route path="interview" element={<InterviewRoom />} />
         </Routes>
       </BrowserRouter>
     </>

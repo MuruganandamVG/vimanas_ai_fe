@@ -61,6 +61,8 @@ const UploadResume = () => {
   };
 
   const onSubmit = async (data: CandidateDetails) => {
+    console.log("data", data);
+    console.log("file,uploadedFile", uploadedFile);
     if (!uploadedFile) {
       toast({
         title: "Missing information",
@@ -72,12 +74,27 @@ const UploadResume = () => {
 
     try {
       setIsProcessing(true);
-      const payload = {
-        ...data,
-        skills: data.skills?.split(",").map((s) => s.trim()),
-      };
+      // const payload = {
+      //   ...data,
+      //   skills: data.skills?.split(",").map((s) => s.trim()),
+      // };
 
-      const candidate = await candidatesAPI.create(payload);
+      // const candidate = await candidatesAPI.create(payload);
+      const formData = new FormData();
+      formData.append("file", uploadedFile);
+      const response = await fetch(
+        "http://localhost:8000/api/v1/parse_resume",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to parse resume");
+      }
+
+      const data = await response.json();
 
       toast({
         title: "Resume processed successfully",

@@ -15,13 +15,11 @@ import NotFound from "./NotFound";
 const serverUrl = "wss://mock-interview-2koatsft.livekit.cloud";
 
 export default function InterviewRoom() {
-  // const { room } = useParams();
+  const { room } = useParams();
   const [searchParams] = useSearchParams();
-  // hard coding the access token for demonstration purposes
-  const AccessToken =
-    "eyJhbGciOiJIUzI1NiJ9.eyJ2aWRlbyI6eyJyb29tSm9pbiI6dHJ1ZSwicm9vbSI6ImludGVydmlldy1yb29tLTE3NTMwMTU0NTk1NTMifSwiaXNzIjoiQVBJUmpQbnBCbVNqZ3ByIiwiZXhwIjoxNzUzMTAxODYwLCJuYmYiOjAsInN1YiI6Im11cnVnYW4ifQ.KMwhTEF65CfgCz_vgmqVdkcnoXFOsZQ1gQfRNda24j8";
+
   const candidate_id = searchParams.get("candidate_id");
-  const token = searchParams.get("token") || AccessToken;
+  const token = searchParams.get("token");
   console.log(token, "token");
   if (!token) {
     return <NotFound />;

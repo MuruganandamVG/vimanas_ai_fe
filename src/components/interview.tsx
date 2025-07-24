@@ -6,10 +6,11 @@ import {
   FaVideoSlash,
 } from "react-icons/fa";
 import { PiPhoneSlashBold } from "react-icons/pi";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE = "http://localhost:8000/api/v1";
 
-const defaultCandidateId = "candidate_1";
+const defaultCandidateId = "aee6527e-7d5a-4b16-a736-ed7ec7c9a280";
 
 const InterviewRoom = () => {
   const [micOn, setMicOn] = useState(true);
@@ -25,6 +26,8 @@ const InterviewRoom = () => {
   const [recording, setRecording] = useState(false);
   const [candidateAnswer, setCandidateAnswer] = useState<string>("");
   const [recognitionActive, setRecognitionActive] = useState(false);
+  const [candidateId, setCandidateId] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // Get user media (audio + video)
   useEffect(() => {
@@ -84,9 +87,9 @@ const InterviewRoom = () => {
     setAiTranscript((prev) => [...prev, `You: ${answer}`]);
     try {
       const res = await fetch(
-        `${API_BASE}/answer?answer=${encodeURIComponent(
+        `${API_BASE}/next_question?answer=${encodeURIComponent(
           answer
-        )}&candidate_id=${defaultCandidateId}`
+        )}&session_id=${candidateId || defaultCandidateId}`
       );
       if (res.ok) {
         const aiAudioBlob = await res.blob();
@@ -130,9 +133,10 @@ const InterviewRoom = () => {
     try {
       const context = "experience 11 and skills are java spring and hibernate";
       const res = await fetch(
-        `${API_BASE}/question?context=${encodeURIComponent(context)}`
+        `${API_BASE}/start_interview?context=${encodeURIComponent(context)}`
       );
       if (res.ok) {
+        setCandidateId(res.headers.get("Candidate-Id"));
         const aiAudioBlob = await res.blob();
         const aiAudioUrl = URL.createObjectURL(aiAudioBlob);
         const audio = new Audio(aiAudioUrl);
@@ -150,7 +154,19 @@ const InterviewRoom = () => {
 
   return (
     <div className="flex flex-col items-center p-6 min-h-screen bg-gray-50">
-      <h1 className="text-2xl font-bold mb-4">AI Interview Room</h1>
+      <div className="w-full flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">AI Interview Room</h1>
+        <button
+          className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition"
+          onClick={() => {
+            // TODO: add editor modal or redirect
+            navigate("/editor");
+          }}
+        >
+          Open Editor
+        </button>
+      </div>
+
       <div className="flex gap-8 mb-6 justify-center">
         {/* Candidate Tile */}
         <div className="relative flex flex-col items-center justify-center bg-gradient-to-br from-blue-700 to-blue-500 rounded-2xl border-4 border-blue-300 shadow-lg w-[400px] h-[340px]">

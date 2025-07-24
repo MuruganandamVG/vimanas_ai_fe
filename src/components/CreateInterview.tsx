@@ -45,7 +45,6 @@ const CreateInterview = () => {
   useEffect(() => {
     loadJobDescriptions();
 
-    // If coming from upload resume page, pre-fill form
     if (location.state?.candidateInfo) {
       const { candidateInfo, resumeFile } = location.state;
       setFormData((prev) => ({
@@ -74,18 +73,6 @@ const CreateInterview = () => {
       ...prev,
       [field]: value,
     }));
-  };
-
-  const handleJdSelect = (jdId) => {
-    const selectedJob = jobDescriptions.find((jd) => jd.id === jdId);
-    if (selectedJob) {
-      setSelectedJd(jdId);
-      setFormData((prev) => ({
-        ...prev,
-        job_description: selectedJob.description,
-        position: selectedJob.title,
-      }));
-    }
   };
 
   const generateQuestions = async () => {
@@ -173,7 +160,6 @@ const CreateInterview = () => {
 
       const newInterview = await interviewsAPI.create(interviewData);
 
-      // Generate questions for the interview
       await interviewsAPI.generateQuestions(newInterview.id);
 
       setInterviewDetails(newInterview);
@@ -232,7 +218,7 @@ const CreateInterview = () => {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
+              <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-700">
                   Candidate
                 </Label>
@@ -357,7 +343,7 @@ const CreateInterview = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 gap-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="candidate_name">Candidate Name *</Label>
                 <Input
                   id="candidate_name"
@@ -370,7 +356,7 @@ const CreateInterview = () => {
                 />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="candidate_email">Email Address *</Label>
                 <Input
                   id="candidate_email"
@@ -383,24 +369,7 @@ const CreateInterview = () => {
                   required
                 />
               </div>
-
-              <div>
-                <Label htmlFor="jdSelect">Job Description Template</Label>
-                <Select value={selectedJd} onValueChange={handleJdSelect}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select job description template" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {jobDescriptions.map((jd) => (
-                      <SelectItem key={jd.id} value={jd.id}>
-                        {jd.title} - {jd.department}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="position">Position</Label>
                 <Input
                   id="position"
@@ -412,7 +381,7 @@ const CreateInterview = () => {
                 />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="skills">Skills (comma-separated)</Label>
                 <Textarea
                   id="skills"
@@ -423,7 +392,7 @@ const CreateInterview = () => {
                 />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="experience">Experience Level</Label>
                 <Input
                   id="experience"
@@ -435,7 +404,7 @@ const CreateInterview = () => {
                 />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="job_description">Job Description</Label>
                 <Textarea
                   id="job_description"
@@ -550,4 +519,3 @@ const CreateInterview = () => {
 };
 
 export default CreateInterview;
-s;

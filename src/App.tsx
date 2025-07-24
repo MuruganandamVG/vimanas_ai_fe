@@ -7,6 +7,7 @@ import CreateInterview from "./components/CreateInterview";
 import ScheduledInterviews from "./components/ScheduledInterviews";
 import InterviewHistory from "./components/InterviewHistory";
 import FullPageEditorWrapper from "./components/Editor";
+import VideoInterview from "./components/ui/videoConfrence";
 function App() {
   return (
     <>
@@ -19,6 +20,7 @@ function App() {
             <Route path="create" element={<CreateInterview />} />
             <Route path="scheduled" element={<ScheduledInterviews />} />
             <Route path="history" element={<InterviewHistory />} />
+            <Route path="videoconference" element={<VideoInterview/>}/>
             {/* <Route path="create" element={<InterviewRoom />} /> */}
             {/* <Route path="interview/:room_name" element={<InterviewRoom />} /> */}
           </Route>

@@ -12,6 +12,7 @@ import {
   LogOut,
   Menu,
   X,
+  Video,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
@@ -37,6 +38,7 @@ const Layout = () => {
     { name: "Create Interview", href: "/create", icon: Calendar },
     { name: "Scheduled Interviews", href: "/scheduled", icon: Clock },
     { name: "Interview History", href: "/history", icon: History },
+    { name: "Video Confrencing", href: "/videoconference", icon: Video },
   ];
 
   const handleLogout = () => {

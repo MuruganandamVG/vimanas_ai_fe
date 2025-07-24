@@ -169,7 +169,7 @@ const InterviewRoom = () => {
 
       <div className="flex gap-8 mb-6 justify-center">
         {/* Candidate Tile */}
-        <div className="relative flex flex-col items-center justify-center bg-gradient-to-br from-blue-700 to-blue-500 rounded-2xl border-4 border-blue-300 shadow-lg w-[400px] h-[340px]">
+        <div className="relative flex flex-col items-center justify-center bg-gradient-to-br from-blue-700 to-blue-500 rounded-2xl border-4 border-blue-300 shadow-lg w-[600px] h-[540px]">
           {videoOn ? (
             <video
               ref={localVideoRef}
@@ -197,7 +197,7 @@ const InterviewRoom = () => {
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-4 w-4 mr-1"
                 fill="none"
-                viewBox="0 0 24 24"
+                viewBox="0 0 48 48"
                 stroke="currentColor"
               >
                 <path
@@ -212,7 +212,7 @@ const InterviewRoom = () => {
           )}
         </div>
         {/* AI Agent Tile */}
-        <div className="relative flex flex-col items-center justify-center bg-gradient-to-br from-gray-700 to-gray-500 rounded-2xl border-4 border-cyan-300 shadow-lg w-[400px] h-[340px]">
+        <div className="relative flex flex-col items-center justify-center bg-gradient-to-br from-gray-700 to-gray-500 rounded-2xl border-4 border-cyan-300 shadow-lg w-[600px] h-[540px]">
           <div className="flex flex-col items-center justify-center w-full h-full rounded-2xl bg-gray-900 text-white text-5xl font-bold">
             <span className="text-6xl">🤖</span>
             <span className="text-lg font-semibold mt-4">AI Interviewer</span>
@@ -225,6 +225,15 @@ const InterviewRoom = () => {
           )}
         </div>
       </div>
+      <div className="w-full max-w-2xl bg-white rounded shadow p-4 mb-4">
+        <h2 className="font-bold mb-2">Live Transcript</h2>
+        <div className="h-40 overflow-y-auto text-gray-200 text-sm whitespace-pre-line">
+          {aiTranscript.map((line, idx) => (
+            <div key={idx}>{line}</div>
+          ))}
+        </div>
+      </div>
+      
       {/* Mic/Video icon buttons below tiles */}
       <div className="flex justify-center gap-4 mb-6">
         <button
@@ -286,17 +295,10 @@ const InterviewRoom = () => {
           </div>
         )}
       </div>
-      <div className="w-full max-w-2xl bg-white rounded shadow p-4 mb-4">
-        <h2 className="font-bold mb-2">Live Transcript</h2>
-        <div className="h-40 overflow-y-auto text-gray-800 text-sm whitespace-pre-line">
-          {aiTranscript.map((line, idx) => (
-            <div key={idx}>{line}</div>
-          ))}
-        </div>
-      </div>
-      {/* No text answer UI, only audio recording for answer */}
-    </div>
+  {/* No text answer UI, only audio recording for answer */}
+  </div>    
   );
+  
 };
 
 export default InterviewRoom;

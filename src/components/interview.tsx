@@ -7,9 +7,9 @@ import {
 } from "react-icons/fa";
 import { PiPhoneSlashBold } from "react-icons/pi";
 import { useNavigate } from "react-router-dom";
+import VoiceOver from "./voice";
 
 const API_BASE = "http://localhost:8000/api/v1";
-
 const defaultCandidateId = "aee6527e-7d5a-4b16-a736-ed7ec7c9a280";
 
 const InterviewRoom = () => {
@@ -20,16 +20,11 @@ const InterviewRoom = () => {
   const [speaking, setSpeaking] = useState<"Candidate" | "Agent" | null>(null);
   const [isInterviewStarted, setIsInterviewStarted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const localVideoRef = useRef<HTMLVideoElement>(null);
-  const aiVideoRef = useRef<HTMLVideoElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const [recording, setRecording] = useState(false);
   const [candidateAnswer, setCandidateAnswer] = useState<string>("");
-  const [recognitionActive, setRecognitionActive] = useState(false);
   const [candidateId, setCandidateId] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Get user media (audio + video)
+  // Obtain user audio & video stream
   useEffect(() => {
     (async () => {
       try {
@@ -47,49 +42,18 @@ const InterviewRoom = () => {
     })();
   }, []);
 
-  // Speech-to-text (Web Speech API)
-  const startSpeechRecognition = () => {
-    if (
-      !("webkitSpeechRecognition" in window || "SpeechRecognition" in window)
-    ) {
-      alert("Speech Recognition not supported in this browser.");
-      return;
-    }
-    const SpeechRecognition =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-    recognition.continuous = false;
-    setRecognitionActive(true);
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setCandidateAnswer(transcript);
-      setRecognitionActive(false);
-      sendAnswerToAI(transcript);
-    };
-    recognition.onerror = (event: any) => {
-      setRecognitionActive(false);
-      alert("Speech recognition error: " + event.error);
-    };
-    recognition.onend = () => {
-      setRecognitionActive(false);
-    };
-    recognition.start();
-  };
+  const localVideoRef = useRef<HTMLVideoElement>(null);
 
-  // Send transcribed answer to AI and play response
+  // Send the transcript (i.e. candidate answer) to the AI and play its audio response
   const sendAnswerToAI = async (answer: string) => {
     setIsLoading(true);
     setSpeaking("Candidate");
     setAiTranscript((prev) => [...prev, `You: ${answer}`]);
     try {
       const res = await fetch(
-        `${API_BASE}/next_question?answer=${encodeURIComponent(
-          answer
-        )}&session_id=${candidateId || defaultCandidateId}`
+        `${API_BASE}/answer?answer=${answer}&candidate_id=${
+          candidateId || defaultCandidateId
+        }`
       );
       if (res.ok) {
         const aiAudioBlob = await res.blob();
@@ -104,6 +68,7 @@ const InterviewRoom = () => {
     }
   };
 
+  // Toggle microphone enabled/disabled on local stream
   const handleMicToggle = () => {
     if (localStream) {
       localStream.getAudioTracks().forEach((track) => {
@@ -112,28 +77,32 @@ const InterviewRoom = () => {
       setMicOn(!micOn);
     }
   };
+
+  // Toggle camera enabled/disabled on local stream
   const handleVideoToggle = () => {
     if (localStream) {
       localStream.getVideoTracks().forEach((track) => {
         track.enabled = !videoOn;
       });
+      // Force video element refresh if turning video back on
       if (!videoOn && localVideoRef.current) {
-        localVideoRef.current.srcObject = null; // Force reset first
+        localVideoRef.current.srcObject = null;
         localVideoRef.current.srcObject = localStream;
       }
       setVideoOn(!videoOn);
     }
   };
 
-  // Recording is now handled by speech-to-text
-
-  // Start interview: get first AI question (audio)
+  // Start the interview by fetching the first AI question (audio)
   const startInterview = async () => {
     setIsLoading(true);
     try {
-      const context = "experience 11 and skills are java spring and hibernate";
+      const context =
+        "experience 4 years on react, nodejs, javascript, typescript";
       const res = await fetch(
-        `${API_BASE}/start_interview?context=${encodeURIComponent(context)}`
+        `${API_BASE}/question?context=${context}&candidate_id=${
+          candidateId || defaultCandidateId
+        }`
       );
       if (res.ok) {
         setCandidateId(res.headers.get("Candidate-Id"));
@@ -150,26 +119,23 @@ const InterviewRoom = () => {
     }
   };
 
-  // Remove text answer, use audio recording
-
   return (
     <div className="flex flex-col items-center p-6 min-h-screen bg-gray-50">
+      {/* Header */}
       <div className="w-full flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">AI Interview Room</h1>
         <button
           className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition"
-          onClick={() => {
-            // TODO: add editor modal or redirect
-            navigate("/editor");
-          }}
+          onClick={() => navigate("/editor")}
         >
           Open Editor
         </button>
       </div>
 
+      {/* Video Tiles */}
       <div className="flex gap-8 mb-6 justify-center">
         {/* Candidate Tile */}
-        <div className="relative flex flex-col items-center justify-center bg-gradient-to-br from-blue-700 to-blue-500 rounded-2xl border-4 border-blue-300 shadow-lg w-[600px] h-[540px]">
+        <div className="relative flex flex-col items-center justify-center bg-gradient-to-br from-blue-700 to-blue-500 rounded-2xl border-4 border-blue-300 shadow-lg w-[500px] h-[400px]">
           {videoOn ? (
             <video
               ref={localVideoRef}
@@ -184,13 +150,11 @@ const InterviewRoom = () => {
               <span className="text-lg font-semibold mt-4">Muruganandam</span>
             </div>
           )}
-          {/* Speaking indicator overlay */}
           {speaking === "Candidate" && (
             <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-20 bg-green-600 text-white px-4 py-2 rounded-full shadow-lg text-base font-semibold">
               🗣️ Speaking
             </div>
           )}
-          {/* Muted indicator */}
           {!micOn && (
             <div className="absolute top-4 right-4 z-20 bg-gray-800 text-white rounded-full px-2 py-1 text-xs flex items-center">
               <svg
@@ -211,13 +175,13 @@ const InterviewRoom = () => {
             </div>
           )}
         </div>
+
         {/* AI Agent Tile */}
-        <div className="relative flex flex-col items-center justify-center bg-gradient-to-br from-gray-700 to-gray-500 rounded-2xl border-4 border-cyan-300 shadow-lg w-[600px] h-[540px]">
+        <div className="relative flex flex-col items-center justify-center bg-gradient-to-br from-gray-700 to-gray-500 rounded-2xl border-4 border-cyan-300 shadow-lg w-[500px] h-[400px]">
           <div className="flex flex-col items-center justify-center w-full h-full rounded-2xl bg-gray-900 text-white text-5xl font-bold">
             <span className="text-6xl">🤖</span>
             <span className="text-lg font-semibold mt-4">AI Interviewer</span>
           </div>
-          {/* Speaking indicator overlay for AI */}
           {speaking === "Agent" && (
             <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-20 bg-green-600 text-white px-4 py-2 rounded-full shadow-lg text-base font-semibold">
               🗣️ Speaking
@@ -225,16 +189,10 @@ const InterviewRoom = () => {
           )}
         </div>
       </div>
-      <div className="w-full max-w-2xl bg-white rounded shadow p-4 mb-4">
-        <h2 className="font-bold mb-2">Live Transcript</h2>
-        <div className="h-40 overflow-y-auto text-gray-200 text-sm whitespace-pre-line">
-          {aiTranscript.map((line, idx) => (
-            <div key={idx}>{line}</div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Mic/Video icon buttons below tiles */}
+
+      {/* Live Transcript */}
+
+      {/* Controls: Mic/Video Buttons */}
       <div className="flex justify-center gap-4 mb-6">
         <button
           onClick={handleMicToggle}
@@ -261,11 +219,13 @@ const InterviewRoom = () => {
           }`}
           title={micOn ? "Turn off mic" : "Turn on mic"}
         >
-          {videoOn ? <PiPhoneSlashBold /> : <PiPhoneSlashBold />}
+          {micOn ? <PiPhoneSlashBold /> : <PiPhoneSlashBold />}
         </button>
       </div>
+
+      {/* Start Interview & Answer Button */}
       <div className="mb-4">
-        {!isInterviewStarted && (
+        {!isInterviewStarted ? (
           <button
             onClick={startInterview}
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
@@ -273,32 +233,32 @@ const InterviewRoom = () => {
           >
             {isLoading ? "Starting..." : "Start Interview"}
           </button>
-        )}
-        {isInterviewStarted && (
-          <div className="flex gap-4 mt-2">
-            <button
-              onClick={startSpeechRecognition}
-              className={`px-4 py-2 rounded text-white ${
-                recognitionActive
-                  ? "bg-gray-400"
-                  : "bg-blue-600 hover:bg-blue-700"
-              }`}
-              disabled={isLoading || recognitionActive}
-            >
-              {recognitionActive ? "Listening..." : "Answer (Speak)"}
-            </button>
-            {candidateAnswer && (
-              <span className="text-gray-700 text-base">
-                Your answer: {candidateAnswer}
-              </span>
-            )}
-          </div>
-        )}
+        ) : null}
+
+        {/* The VoiceOver component handles capturing candidate answer */}
+        {
+          <VoiceOver
+            onTranscriptFinal={(text: string) => {
+              setCandidateAnswer(text);
+              sendAnswerToAI(text);
+            }}
+            isDisabled={isLoading}
+            speaking={speaking}
+            setSpeaking={setSpeaking}
+          />
+        }
       </div>
-  {/* No text answer UI, only audio recording for answer */}
-  </div>    
+
+      {/* Optional: Display candidate answer */}
+      {candidateAnswer && (
+        <div className="mt-4">
+          <p className="text-gray-700 text-base">
+            Your answer: <strong>{candidateAnswer}</strong>
+          </p>
+        </div>
+      )}
+    </div>
   );
-  
 };
 
 export default InterviewRoom;
